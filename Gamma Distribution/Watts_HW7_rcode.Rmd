@@ -1,0 +1,74 @@
+---
+title: "Question 4"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 6, fig.height = 5*(3/4), fig.align = "center")
+```
+
+```{r include=FALSE}
+library(ggplot2)
+library(latex2exp)
+```
+
+## 4a.
+
+```{r echo=TRUE, warning=FALSE}
+exp_function <- function(n, lambda){
+  u <- runif(n)
+  x <- -(1/lambda)*log(1-u)
+  
+  return(x)
+}
+
+n <- 100000
+g <- rep(NA, n)
+
+for (i in 1:n){
+  g[i] <- sum(exp_function(3, 2))
+}
+g <- data.frame(g)
+
+ggplot(g, aes(g)) +
+  geom_histogram(aes(y = ..density..), bins = 30, color = "black", fill = "grey") + 
+  stat_function(fun = dgamma, args = list(shape = 3, rate = 2), size = 1, color = "blue") +
+  xlab("Simulated Draws") +
+  ylab("Density") +
+  ggtitle(TeX(c("$\\Gamma(3,2)$ Simulated by Adding Exponentials"))) +
+  theme_minimal()
+```
+
+## 4b.
+
+```{r}
+accept_reject <- function(n, lambda, alpha, beta){
+  xmax <- (alpha - 1)/(1 - lambda)
+  cee <- (1/(lambda*gamma(alpha)))*(xmax^(alpha-1))*exp(-(1+lambda)*xmax)
+  
+  accept <- 0
+  x <- rep(NA, n)
+  
+  while(accept < n){
+    y <- (-1/lambda)*log(1-runif(1))
+    u <- runif(1)
+    r <- (1/(cee*lambda*gamma(alpha)))*(y^(alpha-1))*exp(-(1+lambda)*y)
+    if (u <= r){
+      accept <- accept + 1
+      x[accept] <- y/beta
+    }
+  }
+  return(x)
+}
+
+g <- accept_reject(n = 100000, lambda = .01, alpha = 3, beta = 2)
+g <- data.frame(g)
+
+ggplot(g, aes(g)) +
+  geom_histogram(aes(y = ..density..), bins = 30, color = "black", fill = "grey") + 
+  stat_function(fun = dgamma, args = list(shape = 3, rate = 2), size = 1, color = "blue") +
+  xlab("Simulated Draws") +
+  ylab("Density") +
+  ggtitle(TeX(c("$\\Gamma(3,2)$ Simulated by the Accept-Reject Algorithm"))) +
+  theme_minimal()
+```
