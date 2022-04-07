@@ -1,0 +1,73 @@
+---
+title: "Question 5"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 5a.
+
+$\mathbf{P} = \begin{vmatrix} \frac{1}{4} & \frac{3}{4} \\ \frac{2}{5} & \frac{3}{5} \end{vmatrix}$
+
+We can use $\pi_j = \sum_{i \epsilon S}\pi_{ij}p_{ij}$ to find the stationary distibution.
+
+$\pi_0 =  \frac{1}{4}\pi_0 + \frac{2}{5}\pi_1 \rightarrow \pi_0 = \frac{8}{15}\pi_1$
+
+Then using the fact that $\pi_0 + \pi_1 = 1$ we can write $\pi_0 = \frac{8}{15}(1 - \pi_0)$
+
+$\rightarrow \frac{23}{15}\pi_0 = \frac{8}{15} \rightarrow \pi_0 = \frac{8}{23}$
+
+Therefore $\pi_0 = \frac{8}{15}$ and $\pi_1 = 1 - \frac{8}{15} = \frac{15}{23}$
+
+## 5b.
+
+```{r}
+sim <- function(nrep, start){
+  x <- rep(NA, nrep)
+  ran <- runif(nrep)
+  x[1] <- start
+  
+  for (i in 2:nrep){
+      if ((x[i-1] == 0 & ran[i] <= 1/4) | (x[i-1] == 1 & ran[i] <= 2/5)){
+        val <- 0
+      }
+      else{
+        val <- 1
+     }
+     x[i] <- val
+    }
+  return(x)
+}
+```
+
+Here I define the function to simulate many paths of the chain. The input parameters are the number of repetitions and the starting point of the chain.
+
+```{r}
+n <- 1000000
+start <- 0
+x <- sim(n, start)
+print(paste(c("The proportion of time ending in state 0 is "), 
+            round(1 - mean(x), 3), " and 1 is ", round(mean(x), 3), sep = ""))
+```
+
+These proportions match the values of $\pi_0 = \frac{8}{23}$ and $\pi_1 = \frac{15}{23}$ found in part (a).
+
+## 5c.
+
+```{r}
+n <- 100000
+z <- rep(NA, n)
+
+for (i in 1:n){
+  start <- rbinom(1, 1, 15/23)
+  y <- sim(2, start)
+  z[i] <- y[2]
+}
+
+print(paste(c("The proportion of time ending in state 0 is "), 
+            round(1 - mean(z), 3), " and 1 is ", round(mean(z), 3), sep = ""))
+```
+
+Here start is randomly chosen as 0 or 1 with the proportions found in part (b) and run for one time step. After running this many times we see that the proportions match the distributions in part (a).
